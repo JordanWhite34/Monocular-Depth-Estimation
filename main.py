@@ -42,9 +42,50 @@ data = {
 df = pd.DataFrame(data)
 df = df.sample(frac=1, random_state=42)
 
+
 # hyperparameter setup
 HEIGHT = 256
 WIDTH = 256
 LR = 0.0002
 EPOCHS = 30
 BATCH_SIZE = 32
+
+
+# building data pipeline
+## - input: dataframe containing path for RGB images, depth, and depth mask files
+## - reads and resizes RGB images
+## - reads depth, depth mask files and processes them to generate depth map image and resizes it
+## - returns: RGB images and depth map images for a batch
+
+class DataGenerator(tf.keras.utils.Sequence):
+    def __init__(self, data, batch_size=6, dim=(768, 1024), n_channels=3, shuffle=True):
+        # initialization
+        self.data = data
+        self.indices = self.data.index.tolist()
+        self.dim = dim
+        self.n_channels = n_channels
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.min_depth = 0.1
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.ceil(len(self.data) / self.batch_size))
+
+    def __getitem__(self, index):
+        if (index + 1) * self.batch_size > len(self.indices):
+            self.batch_size = len(self.indices) - index * self.batch_size
+        # generate 1 data batch
+        # generate batch indices
+        index = self.indices[index * self.batch_size : (index + 1) * self.batch_size]
+        # find list of IDs
+        batch = [self.indices[k] for k in index]
+        x, y = self.data_generation(batch)
+
+        return x, y
+
+    def on_epoch_end(self):
+        # updates indices after each epoch
+        self.index = np.arange(len(self.indices))
+        if self.shuffle == True:
+            np.random.shuffle(self.index)

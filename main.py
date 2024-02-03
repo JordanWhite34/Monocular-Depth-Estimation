@@ -20,3 +20,24 @@ if not os.path.exists(os.path.abspath(".") + annotation_folder):
         origin="http://diode-dataset.s3.amazonaws.com/val.tar.gz",
         extract=True
     )
+
+# prepping dataset
+path = "val/indoors"
+
+file_list = []
+
+for root, _, files in os.walk(path):
+    for file in files:
+        file_list.append(os.path.join(root, file))
+
+## sorting the file list
+file_list.sort()
+data = {
+    "image": [x for x in file_list if x.endswith(".png")],
+    "depth": [x for x in file_list if x.endswith("_depth.npy")],
+    "mask": [x for x in file_list if x.endswith("_depth_mask.npy")]
+}
+
+## making dataframe for the sorted dataset
+df = pd.DataFrame(data)
+df = df.sample(frac=1, random_state=42)

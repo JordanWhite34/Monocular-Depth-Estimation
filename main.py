@@ -41,3 +41,10 @@ data = {
 ## making dataframe for the sorted dataset
 df = pd.DataFrame(data)
 df = df.sample(frac=1, random_state=42)
+
+# hyperparameter setup
+HEIGHT = 256
+WIDTH = 256
+LR = 0.0002
+EPOCHS = 30
+BATCH_SIZE = 32

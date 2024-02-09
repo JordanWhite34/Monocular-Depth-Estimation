@@ -89,3 +89,28 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.index = np.arange(len(self.indices))
         if self.shuffle == True:
             np.random.shuffle(self.index)
+
+    def load(self, image_path, depth_map, mask):
+        # load input and target image
+        image_ = cv2.imread(image_path)
+        image_ = cv2.cvtColor(image_, cv2.COLOR_BGR2RGB)
+        image_ = cv2.resize(image_, self.dim)
+        image_ = tf.image.convert_image_dtype(image_, tf.float32)
+
+        depth_map = np.load(depth_map).squeeze()
+
+        mask = np.load(mask)
+        mask = mask > 0
+
+        max_depth = min(300, np.percentile(depth_map, 99))
+        depth_map = np.clip(depth_map, self.min_depth, max_depth)
+        depth_map = np.log(depth_map, where=mask)
+
+        depth_map = np.ma.masked_where(~mask, depth_map)
+
+        depth_map = np.clip(depth_map, 0.1, np.log(max_depth))
+        depth_map = cv2.resize(depth_map, self.dim)
+        depth_map = np.expand_dims(depth_map, axis=2)
+        depth_map = tf.image.convert_image_dtype(depth_map, tf.float32)
+
+        return image_, depth_map

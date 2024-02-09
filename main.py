@@ -114,3 +114,17 @@ class DataGenerator(tf.keras.utils.Sequence):
         depth_map = tf.image.convert_image_dtype(depth_map, tf.float32)
 
         return image_, depth_map
+
+    def data_generation(self, batch):
+
+        x = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size, *self.dim, 1))
+
+        for i, batch_id in enumerate(batch):
+            x[i,], y[i,] = self.load(
+                self.data["image"][batch_id],
+                self.data["depth"][batch_id],
+                self.data["mask"][batch_id]
+            )
+
+        return x, y

@@ -77,12 +77,13 @@ class DataGenerator(tf.keras.utils.Sequence):
             self.batch_size = len(self.indices) - index * self.batch_size
         # generate 1 data batch
         # generate batch indices
-        index = self.indices[index * self.batch_size : (index + 1) * self.batch_size]
+        index = self.indices[index * self.batch_size : (index + 1) * self.batch_size]  # selecting the current interval of indices
         # find list of IDs
-        batch = [self.indices[k] for k in index]
-        x, y = self.data_generation(batch)
+        # TODO: following line could be redundant: check functionality later
+        batch = [self.indices[k] for k in index]  # using the selection of indices we just made to get the batch of IDs/indices to be processed
+        x, y = self.data_generation(batch)  # loads and processes images and depth maps corresponding to each index
 
-        return x, y
+        return x, y  # x is batch of processed RGB images (inputs), y is batch of processed depth maps (targets)
 
     def on_epoch_end(self):
         # updates indices after each epoch

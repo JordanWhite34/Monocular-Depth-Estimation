@@ -11,15 +11,15 @@ import matplotlib.pyplot as plt
 
 tf.random.set_seed(123)
 
-# downloading the dataset
-annotation_folder = "/dataset/"
-if not os.path.exists(os.path.abspath(".") + annotation_folder):
-    annotation_zip = tf.keras.utils.get_file(
-        "val.tar.gz",
-        cache_subdir=os.path.abspath("."),
-        origin="http://diode-dataset.s3.amazonaws.com/val.tar.gz",
-        extract=True
-    )
+# # downloading the dataset
+# annotation_folder = "/dataset/"
+# if not os.path.exists(os.path.abspath(".") + annotation_folder):
+#     annotation_zip = tf.keras.utils.get_file(
+#         "val.tar.gz",
+#         cache_subdir=os.path.abspath("."),
+#         origin="http://diode-dataset.s3.amazonaws.com/val.tar.gz",
+#         extract=True
+#     )
 
 # prepping dataset
 path = "val/indoors"
@@ -139,7 +139,6 @@ def visualize_depth_map(samples, test=False, model=None):
 
     if test:
         pred = model.predict(input)
-        fig, ax = model.predict(input)
         fig, ax = plt.subplots(6, 3, figsize=(50,50))
         for i in range(6):
             ax[i, 0].imshow((input[i].squeeze()))
@@ -158,3 +157,23 @@ visualize_samples = next(
 )
 
 visualize_depth_map(visualize_samples)
+
+
+# 3D Point Cloud Visualization
+depth_vis = np.flipud(visualize_samples[1][1].squeeze())  # target
+img_vis = np.flipud(visualize_samples[0][1].squeeze())  # input
+
+fig = plt.figure(figsize=(15,10))
+ax = plt.axes(projection="3d")
+
+STEP=3
+for x in range(0, img_vis.shape[0], STEP):
+    for y in range(0, img_vis.shape[1], STEP):
+        ax.scatter(
+            [depth_vis[x, y]] * 3,
+            [y] * 3,
+            [x] * 3,
+            c=tuple(img_vis[x,y,:3] / 255),
+            s=3
+        )
+    ax.view_init(45, 135)
